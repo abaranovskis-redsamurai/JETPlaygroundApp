@@ -1,0 +1,11 @@
+node_modules
+bower_components
+web
+
+hybrid/platforms
+hybrid/www/*
+
+!hybrid/plugins
+hybrid/plugins/*
+!hybrid/plugins/fetch.json
+
