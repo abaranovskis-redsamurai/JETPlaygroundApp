@@ -6,7 +6,7 @@
  * Your application specific code will go here
  */
 define(['ojs/ojcore', 'knockout', 'ojs/ojrouter', 'ojs/ojknockout', 'ojs/ojarraytabledatasource',
-  'ojs/ojoffcanvas'],
+  'ojs/ojoffcanvas', 'ojs/ojdialog', 'ojs/ojswitch', 'ojs/ojbutton'],
   function(oj, ko) {
      function ControllerViewModel() {
        var self = this;
@@ -51,16 +51,71 @@ define(['ojs/ojcore', 'knockout', 'ojs/ojrouter', 'ojs/ojknockout', 'ojs/ojarray
 
       // Header
       // Application Name used in Branding Area
-      self.appName = ko.observable("Red Samurai Application");
+      self.appName = ko.observable(oj.Translations.getTranslatedString('appName'));
+      self.copyright = ko.observable(oj.Translations.getTranslatedString('copyright'));
+      self.about = ko.observable(oj.Translations.getTranslatedString('about'));
+      self.dueDate = ko.observable(oj.Translations.getTranslatedString('dueDate'));
       // User Info used in Global Navigation area
       self.userLogin = ko.observable("");
       
       self.isLoggedIn = ko.observable(false);
       self.restSessionId = ko.observable("");
       
+      self.incidentNumber = ko.observable(oj.Translations.getTranslatedString('incidentNumber'));
+      
+      self.languageChecked = ko.observable();     
+      self.languageChecked.subscribe(function(data) {
+         var newLang = '';
+         if(data === true) {
+             newLang = 'lt-LT';
+         } else {
+             newLang = 'en-US';
+         }
+         oj.Config.setLocale(newLang,
+             function () {
+                 $('html').attr('lang', newLang);
+                 self.incidentNumber(oj.Translations.getTranslatedString('incidentNumber'));
+                 self.appName(oj.Translations.getTranslatedString('appName'));
+                 self.copyright(oj.Translations.getTranslatedString('copyright'));
+                 self.about(oj.Translations.getTranslatedString('about'));
+                 self.link2Name(oj.Translations.getTranslatedString('contacts'));
+                 self.dueDate(oj.Translations.getTranslatedString('dueDate'));
+                 
+                 self.router.configure({
+                    'dashboard': {label: oj.Translations.getTranslatedString('dasboardMenu'), isDefault: true},
+                    'incidents': {label: 'Incidents'},
+                    'customers': {label: 'Customers'},
+                    'about': {label: 'About'}
+                 });
+                 // Navigation setup
+                 navData = [
+                    {name: oj.Translations.getTranslatedString('dasboardMenu'), id: 'dashboard',
+                      iconClass: 'oj-navigationlist-item-icon demo-icon-font-24 demo-chart-icon-24'},
+                    {name: 'Incidents', id: 'incidents',
+                      iconClass: 'oj-navigationlist-item-icon demo-icon-font-24 demo-fire-icon-24'},
+                    {name: 'Customers', id: 'customers',
+                      iconClass: 'oj-navigationlist-item-icon demo-icon-font-24 demo-people-icon-24'},
+                    {name: 'About', id: 'about',
+                      iconClass: 'oj-navigationlist-item-icon demo-icon-font-24 demo-info-icon-24'}
+                 ];
+                 self.navDataSource.reset(navData, {idAttribute: 'id'});
+                 oj.Router.sync();
+             }
+         );
+      });
+      
       // Dropdown menu states
       self.menuItemSelect = function (event, ui) {
         switch (ui.item.attr("id")) {
+          case "pref":
+            if ($('html').attr('lang') === 'lt-LT') {
+                self.languageChecked(true);
+            } else {
+                self.languageChecked(false);
+            }
+            
+            $("#md1").ojDialog("open");           
+            break;
           case "about":
             
             break;
@@ -91,26 +146,23 @@ define(['ojs/ojcore', 'knockout', 'ojs/ojrouter', 'ojs/ojknockout', 'ojs/ojarray
                 function(error) {
                     console.log('Transition to default state failed: ' + error.message);
                 }
-            );
-             
+            );             
             break;
           default:
         }
       };
-
-      // Footer
-      function footerLink(name, id, linkTarget) {
-        this.name = name;
-        this.linkId = id;
-        this.linkTarget = linkTarget;
+      
+      self.closePreferences = function() {
+        $("#md1").ojDialog("close");
       }
-      self.footerLinks = ko.observableArray([
-        new footerLink('About Oracle', 'aboutOracle', 'http://www.oracle.com/us/corporate/index.html#menu-about'),
-        new footerLink('Contact Us', 'contactUs', 'http://www.oracle.com/us/corporate/contact/index.html'),
-        new footerLink('Legal Notices', 'legalNotices', 'http://www.oracle.com/us/legal/index.html'),
-        new footerLink('Terms Of Use', 'termsOfUse', 'http://www.oracle.com/us/legal/terms/index.html'),
-        new footerLink('Your Privacy Rights', 'yourPrivacyRights', 'http://www.oracle.com/us/legal/privacy/index.html')
-      ]);
+
+      self.link1Name = "About Oracle";
+      self.link1Id = "aboutOracle";
+      self.link1Url = "http://www.oracle.com/us/corporate/index.html#menu-about";
+      
+      self.link2Name = ko.observable(oj.Translations.getTranslatedString('contacts'));
+      self.link2Id = "contactUs";
+      self.link2Url = "http://www.oracle.com/us/corporate/contact/index.html";
      }
 
      return new ControllerViewModel();

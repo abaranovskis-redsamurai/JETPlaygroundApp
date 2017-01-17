@@ -5,7 +5,8 @@
 /*
  * Your customer ViewModel code goes here
  */
-define(['ojs/ojcore', 'knockout', 'jquery'],
+define(['ojs/ojcore', 'knockout', 'jquery', 'ojs/ojdatetimepicker', 'ojs/ojinputnumber',
+    'ojs/ojinputtext'],
  function(oj, ko, $) {
   
     function CustomerViewModel() {
